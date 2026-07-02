@@ -76,4 +76,28 @@ if ! command -v atuin >/dev/null 2>&1; then
   fi
 fi
 
+if ! command -v bun >/dev/null 2>&1; then
+  arch="$(uname -m)"
+  case "$arch" in
+    x86_64)  bun_target="bun-linux-x64" ;;
+    aarch64) bun_target="bun-linux-aarch64" ;;
+    *)       bun_target="" ;;
+  esac
+  if [[ -n "$bun_target" ]]; then
+    log "installing bun ($bun_target release binary)"
+    tmpd="$(mktemp -d)"
+    if curl -fsSL "https://github.com/oven-sh/bun/releases/latest/download/${bun_target}.zip" -o "$tmpd/bun.zip" \
+         && (command -v unzip >/dev/null 2>&1 || { [[ -n "$SUDO" ]] && command -v apt-get >/dev/null 2>&1 && $SUDO apt-get install -y -qq unzip; }) \
+         && unzip -q "$tmpd/bun.zip" -d "$tmpd"; then
+      mkdir -p "$HOME/.bun/bin"
+      mv "$tmpd/${bun_target}/bun" "$HOME/.bun/bin/bun" || log "bun binary move failed"
+    else
+      log "bun download/extract failed, continuing"
+    fi
+    rm -rf "$tmpd"
+  else
+    log "unsupported arch ($arch) for bun release binary — skipping"
+  fi
+fi
+
 log "provisioning complete"
