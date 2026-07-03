@@ -19,12 +19,10 @@ sudo chsh -s "$(command -v zsh)" "$(whoami)"
 
 curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin
 
-curl -fsSL https://github.com/atuinsh/atuin/releases/latest/download/atuin-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /tmp
-mv /tmp/atuin-x86_64-unknown-linux-gnu/atuin ~/.local/bin/
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
 
-curl -fsSL https://github.com/oven-sh/bun/releases/latest/download/bun-linux-x64.zip -o /tmp/bun.zip
-unzip -qo /tmp/bun.zip -d /tmp
-mkdir -p ~/.bun/bin
-mv /tmp/bun-linux-x64/bun ~/.bun/bin/
+curl -fsSL https://bun.com/install | bash
+
+curl -fsSL https://opencode.ai/install | bash
 
 echo "dotfiles installed"
