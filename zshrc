@@ -1,4 +1,9 @@
 export PATH="${HOME}/.local/bin:${PATH}"
+
+# Auto-attach tmux on SSH login
+if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ] && [ -t 1 ] && command -v tmux >/dev/null; then
+  exec tmux new-session -A -s main
+fi
 eval "$(starship init zsh)"
 
 eval "$(zoxide init zsh)"
