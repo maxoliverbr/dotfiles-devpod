@@ -1,8 +1,14 @@
 export PATH="${HOME}/.local/bin:${PATH}"
 
-# Auto-attach tmux on SSH login
-if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ] && [ -t 1 ] && command -v tmux >/dev/null; then
-  exec tmux new-session -A -s main
+# Auto-attach tmux on SSH login (real sshd sets $SSH_CONNECTION; devpod's
+# ssh-server --stdio doesn't, so also check the parent process name)
+if [ -z "$TMUX" ] && [ -t 1 ] && command -v tmux >/dev/null; then
+  parent_cmd=$(tr '\0' ' ' < /proc/$PPID/cmdline 2>/dev/null)
+  case "${parent_cmd:-}|$SSH_CONNECTION" in
+    *sshd*|*ssh-server*|*SSH_CONNECTION=*)
+      exec tmux new-session -A -s main
+      ;;
+  esac
 fi
 eval "$(starship init zsh)"
 
