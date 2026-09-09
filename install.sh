@@ -54,6 +54,12 @@ if [ -f ~/.opencode/bin/opencode ]; then
     ln -sfn ~/.opencode/bin/opencode ~/.local/bin/opencode
 fi
 
+# herdr: agent-aware terminal multiplexer. Its installer drops the binary in
+# ~/.local/bin itself. dev-session builds the opencode + zsh tab layout and is
+# what `devpod up` attaches to.
+{ curl -fsSL https://herdr.dev/install.sh | sh; } >/dev/null 2>&1 || true
+ln -sfn "$DOTFILES_DIR/bin/dev-session" ~/.local/bin/dev-session
+
 # The installers above append to ~/.zshrc and ~/.bashrc, which are symlinks into
 # this clone -- that is how host-machine PATH junk once got committed here, and
 # atuin leaves an unguarded `. ~/.atuin/bin/env` that breaks login if it is ever

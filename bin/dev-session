@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Attach to this container's herdr session, building it on first run with two
+# tabs: opencode, and a plain zsh shell.
+#
+# `devpod up` runs this on every boot, so the layout build is idempotent --
+# otherwise each boot would stack up another workspace.
+set -euo pipefail
+
+cd "${1:-$PWD}"
+
+# The herdr CLI talks to a background server and will not start one itself
+# ("run `herdr` to start or attach it"), but bare `herdr` launches the TUI.
+# setsid so the server outlives the ssh session that started it.
+if ! herdr status server 2>/dev/null | grep -q '^status: running'; then
+    setsid herdr server >/tmp/herdr-server.log 2>&1 </dev/null &
+    for _ in $(seq 50); do
+        herdr status server 2>/dev/null | grep -q '^status: running' && break
+        sleep 0.1
+    done
+fi
+
+if [ "$(herdr workspace list | jq '.result.workspaces | length')" -eq 0 ]; then
+    created=$(herdr workspace create --cwd "$PWD" --label "${PWD##*/}" --no-focus)
+    ws=$(jq -r '.result.workspace.workspace_id' <<<"$created")
+    tab=$(jq -r '.result.tab.tab_id'            <<<"$created")
+    pane=$(jq -r '.result.root_pane.pane_id'    <<<"$created")
+
+    # Workspace creation already made tab 1 + its root pane; reuse them for
+    # opencode rather than creating a third tab, and leave focus there.
+    herdr tab rename "$tab" opencode  >/dev/null
+    herdr pane run   "$pane" opencode >/dev/null
+    herdr tab create --workspace "$ws" --label zsh --cwd "$PWD" --no-focus >/dev/null
+fi
+
+exec herdr
