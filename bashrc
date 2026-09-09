@@ -28,5 +28,3 @@ fi
 unset rc
 
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
-
-# dp function lives in ~/.bashrc.d/dp.sh (sourced via the loop above)

@@ -29,7 +29,6 @@ sudo chmod o+x /root
 
 ln -sfn "$DOTFILES_DIR/bashrc"        ~/.bashrc
 ln -sfn "$DOTFILES_DIR/zshrc"         ~/.zshrc
-ln -sfn "$DOTFILES_DIR/bashrc.d/dp.sh" ~/.bashrc.d/dp.sh
 
 sudo apt-get update -qq
 sudo apt-get install -y -qq zsh zoxide direnv unzip tmux
