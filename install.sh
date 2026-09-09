@@ -21,7 +21,7 @@ sudo apt-get update -qq
 sudo apt-get install -y -qq zsh zoxide direnv unzip tmux
 sudo chsh -s "$(command -v zsh)" "$(whoami)"
 
-curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin
+curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin >/dev/null
 
 curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh || true
 if [ -f "$HOME/.cargo/bin/atuin" ]; then
