@@ -2,33 +2,77 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "minimax-coding-plan/MiniMax-M3",
   "small_model": "minimax-coding-plan/MiniMax-M3",
-  "disabled_providers": ["minimax", "minimax-cn", "minimax-cn-coding-plan"],
+  "disabled_providers": [
+    "minimax",
+    "minimax-cn",
+    "minimax-cn-coding-plan"
+  ],
   "mcp": {
     "shadcn": {
-      "type": "local",
       "enabled": true,
-      "command": ["bunx", "-y", "shadcn@latest", "mcp"]
+      "type": "local",
+      "command": [
+        "bunx",
+        "-y",
+        "shadcn@latest",
+        "mcp"
+      ]
     },
     "mastra": {
-      "type": "local",
       "enabled": true,
-      "command": ["bunx", "-y", "@mastra/mcp-docs-server@latest"]
+      "type": "local",
+      "command": [
+        "bunx",
+        "-y",
+        "@mastra/mcp-docs-server@latest"
+      ]
     },
     "elysiajs": {
-      "type": "remote",
       "enabled": true,
+      "type": "remote",
       "url": "https://gitmcp.io/elysiajs/documentation"
     },
-    "clerk": {
-      "type": "remote",
+    "playwright": {
+      "type": "local",
+      "command": [
+        "bunx",
+        "-y",
+        "@playwright/mcp@latest"
+      ],
       "enabled": true,
+      "environment": {
+        "PLAYWRIGHT_MCP_BROWSER": "chromium",
+        "PLAYWRIGHT_MCP_ISOLATED": "false"
+      }
+    },
+    "clerk": {
+      "enabled": true,
+      "type": "remote",
       "url": "https://mcp.clerk.com/mcp"
+    },
+    "chrome-devtools": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "bunx",
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
     },
     "context7": {
       "type": "remote",
-      "enabled": true,
       "url": "https://mcp.context7.com/mcp",
-      "headers": { "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}" }
+      "enabled": true,
+      "headers": {
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+      }
+    },
+    "codebase-memory-mcp": {
+      "enabled": true,
+      "type": "local",
+      "command": [
+        "/home/vscode/.local/bin/codebase-memory-mcp"
+      ]
     }
   }
 }
