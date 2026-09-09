@@ -31,7 +31,11 @@ ln -sfn "$DOTFILES_DIR/bashrc"        ~/.bashrc
 ln -sfn "$DOTFILES_DIR/zshrc"         ~/.zshrc
 
 sudo apt-get update -qq
-sudo apt-get install -y -qq zsh zoxide direnv unzip tmux
+# DEBIAN_FRONTEND: devpod runs this without a controlling tty, so debconf walks
+# Dialog -> Readline -> Teletype -> Noninteractive, printing an "unable to
+# initialize frontend" pair for each. >/dev/null drops dpkg's unpack chatter;
+# stderr stays open so a real apt failure is still visible (set -e aborts).
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq zsh zoxide direnv unzip tmux >/dev/null
 sudo chsh -s "$(command -v zsh)" "$(whoami)"
 
 { curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin; } >/dev/null 2>&1
