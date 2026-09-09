@@ -1,5 +1,10 @@
 export PATH="${HOME}/.local/bin:${PATH}"
 
+# devpod's ssh-server --stdio doesn't propagate $TERM. tmux refuses to start without
+# it ("open terminal failed: terminal does not support clear"), and the failed exec
+# becomes the SSH session's exit status, breaking `devpod up`'s tunnel.
+export TERM="${TERM:-xterm-256color}"
+
 # Auto-attach tmux on SSH login (real sshd sets $SSH_CONNECTION; devpod's
 # ssh-server --stdio doesn't, so also check the parent process name)
 if [ -z "$TMUX" ] && [ -t 1 ] && command -v tmux >/dev/null; then
