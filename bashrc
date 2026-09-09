@@ -26,16 +26,7 @@ if [ -d ~/.bashrc.d ]; then
     done
 fi
 unset rc
-export PATH="$HOME/.local/bin:$PATH" # or /home/maxoliver/.zshrc
 
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/home/maxoliver/.lmstudio/bin"
-# End of LM Studio CLI section
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
-. "$HOME/.cargo/env"
-
-
-# Added by Antigravity CLI installer
-export PATH="/home/maxoliver/.local/bin:$PATH"
-
-# dp function lives in ~/.bashrc.d/dp.sh (sourced via the loop below)
+# dp function lives in ~/.bashrc.d/dp.sh (sourced via the loop above)

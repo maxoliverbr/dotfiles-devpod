@@ -21,16 +21,16 @@ sudo apt-get update -qq
 sudo apt-get install -y -qq zsh zoxide direnv unzip tmux
 sudo chsh -s "$(command -v zsh)" "$(whoami)"
 
-curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin >/dev/null
+curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin >/dev/null 2>&1
 
-curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh || true
+curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh >/dev/null 2>&1 || true
 if [ -f "$HOME/.cargo/bin/atuin" ]; then
     ln -sfn "$HOME/.cargo/bin/atuin" ~/.local/bin/atuin
 fi
 
-curl -fsSL https://bun.com/install | bash || true
+curl -fsSL https://bun.com/install | bash >/dev/null 2>&1 || true
 
-curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path || true
+curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path >/dev/null 2>&1 || true
 if [ -f ~/.opencode/bin/opencode ]; then
     ln -sfn ~/.opencode/bin/opencode ~/.local/bin/opencode
 fi
