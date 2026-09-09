@@ -28,9 +28,11 @@ sudo chsh -s "$(command -v zsh)" "$(whoami)"
 
 { curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin; } >/dev/null 2>&1
 
-{ curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh; } >/dev/null 2>&1 || true
-if [ -f "$HOME/.cargo/bin/atuin" ]; then
-    ln -sfn "$HOME/.cargo/bin/atuin" ~/.local/bin/atuin
+# --non-interactive: without it the installer probes /dev/tty, and the failed
+# `exec 3</dev/tty` kills POSIX sh outright when devpod runs this without a tty.
+{ curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --non-interactive; } >/dev/null 2>&1 || true
+if [ -x "$HOME/.atuin/bin/atuin" ]; then
+    ln -sfn "$HOME/.atuin/bin/atuin" ~/.local/bin/atuin
 fi
 
 { curl -fsSL https://bun.com/install | bash; } >/dev/null 2>&1 || true
