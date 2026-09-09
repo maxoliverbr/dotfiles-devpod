@@ -10,13 +10,13 @@ if [ -z "$TMUX" ] && [ -t 1 ] && command -v tmux >/dev/null; then
       ;;
   esac
 fi
-eval "$(starship init zsh)"
+command -v starship >/dev/null && eval "$(starship init zsh)"
 
-eval "$(zoxide init zsh)"
+command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
 
-eval "$(atuin init zsh)"
+command -v atuin    >/dev/null && eval "$(atuin init zsh)"
 
-eval "$(direnv hook zsh)"
+command -v direnv   >/dev/null && eval "$(direnv hook zsh)"
 
 export BUN_INSTALL="$HOME/.bun"; export PATH="$BUN_INSTALL/bin:$PATH"
 
