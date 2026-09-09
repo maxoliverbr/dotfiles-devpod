@@ -18,6 +18,15 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$PATH"
 
 mkdir -p ~/.bashrc.d ~/.local/bin
 
+# devpod configures the container's git identity with `su vscode -c 'git config
+# --global ...'` from cwd=/root. /root is 0700, so git's repo discovery stats
+# /root/.git, gets EACCES rather than ENOENT, and dies with exit 128 -- devpod
+# retries ~20x per boot, all failing, and the container ends up with no identity.
+# o+x grants traverse only (not read/list); git then gets ENOENT and proceeds.
+# Runs early so devpod's remaining retries land inside this same boot.
+# ponytail: workaround for loft-sh/devpod; drop it if upstream stops using cwd=/root.
+sudo chmod o+x /root
+
 ln -sfn "$DOTFILES_DIR/bashrc"        ~/.bashrc
 ln -sfn "$DOTFILES_DIR/zshrc"         ~/.zshrc
 ln -sfn "$DOTFILES_DIR/bashrc.d/dp.sh" ~/.bashrc.d/dp.sh
