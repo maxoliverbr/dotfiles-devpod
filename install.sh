@@ -74,6 +74,14 @@ fi
 have herdr || { curl -fsSL https://herdr.dev/install.sh | sh; } >/dev/null 2>&1 || true
 ln -sfn "$DOTFILES_DIR/bin/dev-session" ~/.local/bin/dev-session
 
+# Pin opencode to MiniMax's subscription provider. All four MiniMax providers
+# read the same MINIMAX_API_KEY, and models.dev prices minimax/minimax-cn at
+# $0.30/$1.20 per Mtok while the *-coding-plan pair is 0 -- i.e. covered by the
+# subscription. Disabling the metered ones makes it impossible to pick one by
+# accident and get billed per token. minimaxi.com is the China endpoint.
+mkdir -p ~/.config/opencode
+ln -sfn "$DOTFILES_DIR/opencode/opencode.json" ~/.config/opencode/opencode.json
+
 # The installers above append to ~/.zshrc and ~/.bashrc, which are symlinks into
 # this clone -- that is how host-machine PATH junk once got committed here, and
 # atuin leaves an unguarded `. ~/.atuin/bin/env` that breaks login if it is ever
