@@ -18,6 +18,11 @@ export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$PATH"
 
 mkdir -p ~/.bashrc.d ~/.local/bin
 
+# Re-running the installers below on every boot cost ~8s of a ~13s `devpod up`,
+# all of it redoing work already done. Skip whatever is already present.
+# DOTFILES_FORCE_INSTALL=1 reinstalls everything, e.g. to pull tool upgrades.
+have() { [ -z "${DOTFILES_FORCE_INSTALL:-}" ] && command -v "$1" >/dev/null 2>&1; }
+
 # devpod configures the container's git identity with `su vscode -c 'git config
 # --global ...'` from cwd=/root. /root is 0700, so git's repo discovery stats
 # /root/.git, gets EACCES rather than ENOENT, and dies with exit 128 -- devpod
@@ -30,26 +35,35 @@ sudo chmod o+x /root
 ln -sfn "$DOTFILES_DIR/bashrc"        ~/.bashrc
 ln -sfn "$DOTFILES_DIR/zshrc"         ~/.zshrc
 
-sudo apt-get update -qq
-# DEBIAN_FRONTEND: devpod runs this without a controlling tty, so debconf walks
-# Dialog -> Readline -> Teletype -> Noninteractive, printing an "unable to
-# initialize frontend" pair for each. >/dev/null drops dpkg's unpack chatter;
-# stderr stays open so a real apt failure is still visible (set -e aborts).
-sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq zsh zoxide direnv unzip tmux >/dev/null
-sudo chsh -s "$(command -v zsh)" "$(whoami)"
+# Only touch apt when something is actually missing; `update` + a no-op
+# `install` were 2.5s of every boot. DEBIAN_FRONTEND because devpod runs this
+# without a controlling tty, so debconf otherwise walks Dialog -> Readline ->
+# Teletype -> Noninteractive, printing an "unable to initialize frontend" pair
+# for each. >/dev/null drops dpkg chatter; stderr stays open so a real apt
+# failure is still visible (set -e aborts).
+missing=""
+for pkg in zsh zoxide direnv unzip tmux; do
+    dpkg -s "$pkg" >/dev/null 2>&1 || missing="$missing $pkg"
+done
+if [ -n "$missing" ]; then
+    sudo apt-get update -qq
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $missing >/dev/null
+fi
+[ "$(getent passwd "$(id -un)" | cut -d: -f7)" = "$(command -v zsh)" ] \
+    || sudo chsh -s "$(command -v zsh)" "$(whoami)"
 
-{ curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin; } >/dev/null 2>&1
+have starship || { curl -fsSL https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin; } >/dev/null 2>&1
 
 # --non-interactive: without it the installer probes /dev/tty, and the failed
 # `exec 3</dev/tty` kills POSIX sh outright when devpod runs this without a tty.
-{ curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --non-interactive; } >/dev/null 2>&1 || true
+have atuin || { curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --non-interactive; } >/dev/null 2>&1 || true
 if [ -x "$HOME/.atuin/bin/atuin" ]; then
     ln -sfn "$HOME/.atuin/bin/atuin" ~/.local/bin/atuin
 fi
 
-{ curl -fsSL https://bun.com/install | bash; } >/dev/null 2>&1 || true
+have bun || { curl -fsSL https://bun.com/install | bash; } >/dev/null 2>&1 || true
 
-{ curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path; } >/dev/null 2>&1 || true
+have opencode || { curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path; } >/dev/null 2>&1 || true
 if [ -f ~/.opencode/bin/opencode ]; then
     ln -sfn ~/.opencode/bin/opencode ~/.local/bin/opencode
 fi
@@ -57,7 +71,7 @@ fi
 # herdr: agent-aware terminal multiplexer. Its installer drops the binary in
 # ~/.local/bin itself. dev-session builds the opencode + zsh tab layout and is
 # what `devpod up` attaches to.
-{ curl -fsSL https://herdr.dev/install.sh | sh; } >/dev/null 2>&1 || true
+have herdr || { curl -fsSL https://herdr.dev/install.sh | sh; } >/dev/null 2>&1 || true
 ln -sfn "$DOTFILES_DIR/bin/dev-session" ~/.local/bin/dev-session
 
 # The installers above append to ~/.zshrc and ~/.bashrc, which are symlinks into
