@@ -80,4 +80,13 @@ ln -sfn "$DOTFILES_DIR/bin/dev-session" ~/.local/bin/dev-session
 # missing. The rc files in git already init every tool defensively, so drop them.
 git -C "$DOTFILES_DIR" checkout -- .
 
+# Every installer above is `|| true`, so a transient network failure would
+# otherwise leave a tool missing without a word. The presence guards mean the
+# next boot retries it; this just makes the gap visible in the meantime.
+absent=""
+for tool in starship zoxide atuin direnv bun opencode herdr tmux zsh; do
+    command -v "$tool" >/dev/null 2>&1 || absent="$absent $tool"
+done
+[ -z "$absent" ] || echo "dotfiles: NOT installed:$absent (retried next boot)" >&2
+
 echo "dotfiles installed"
