@@ -42,4 +42,10 @@ if [ -f ~/.opencode/bin/opencode ]; then
     ln -sfn ~/.opencode/bin/opencode ~/.local/bin/opencode
 fi
 
+# The installers above append to ~/.zshrc and ~/.bashrc, which are symlinks into
+# this clone -- that is how host-machine PATH junk once got committed here, and
+# atuin leaves an unguarded `. ~/.atuin/bin/env` that breaks login if it is ever
+# missing. The rc files in git already init every tool defensively, so drop them.
+git -C "$DOTFILES_DIR" checkout -- .
+
 echo "dotfiles installed"
