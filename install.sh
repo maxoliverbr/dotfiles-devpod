@@ -5,9 +5,14 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Sync local clone with origin so changes pushed between devpod up runs actually land.
 # Tool installers (bun, opencode, lm-studio) append to ~/.zshrc, which is a symlink
 # back into this clone, so discard those mutations before resetting.
-git -C "$DOTFILES_DIR" checkout -- . 2>/dev/null || true
-git -C "$DOTFILES_DIR" fetch --quiet origin main
-git -C "$DOTFILES_DIR" reset --hard origin/main
+# The reset rewrites THIS script under the running bash, which reads by byte offset,
+# so re-exec the freshly synced copy instead of finishing on a half-stale one.
+if [ "${1:-}" != "--synced" ]; then
+    git -C "$DOTFILES_DIR" checkout -- . 2>/dev/null || true
+    git -C "$DOTFILES_DIR" fetch --quiet origin main
+    git -C "$DOTFILES_DIR" reset --hard origin/main
+    exec bash "$DOTFILES_DIR/install.sh" --synced
+fi
 
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$HOME/.bun/bin:$PATH"
 
