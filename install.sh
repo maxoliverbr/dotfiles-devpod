@@ -94,13 +94,6 @@ fi
 have herdr || { curl -fsSL https://herdr.dev/install.sh | sh; } >/dev/null 2>&1 || true
 ln -sfn "$DOTFILES_DIR/bin/dev-session" ~/.local/bin/dev-session
 
-# Install herdr's opencode integration up front, otherwise herdr prompts to do
-# it on first start. Idempotent, purely local, ~1ms, so just run it every boot.
-# </dev/null keeps it non-interactive even when a tty is attached.
-if command -v herdr >/dev/null 2>&1; then
-    herdr integration install opencode </dev/null >/tmp/integration.log 2>&1; echo "rc=$?" >>/tmp/integration.log
-fi
-
 # Pin opencode to MiniMax's subscription provider. All four MiniMax providers
 # read the same MINIMAX_API_KEY, and models.dev prices minimax/minimax-cn at
 # $0.30/$1.20 per Mtok while the *-coding-plan pair is 0 -- i.e. covered by the
@@ -108,6 +101,14 @@ fi
 # accident and get billed per token. minimaxi.com is the China endpoint.
 mkdir -p ~/.config/opencode
 ln -sfn "$DOTFILES_DIR/opencode/opencode.json" ~/.config/opencode/opencode.json
+
+# Install herdr's opencode integration up front, otherwise herdr prompts to do
+# it on first start. MUST come after the mkdir above: it refuses with "opencode
+# config directory not found" if ~/.config/opencode does not exist yet, which
+# only shows up on a fresh container. Idempotent, local, ~1ms.
+if command -v herdr >/dev/null 2>&1; then
+    herdr integration install opencode </dev/null >/dev/null 2>&1 || true
+fi
 
 # The installers above append to ~/.zshrc and ~/.bashrc, which are symlinks into
 # this clone -- that is how host-machine PATH junk once got committed here, and
