@@ -70,6 +70,24 @@ if [ -f ~/.opencode/bin/opencode ]; then
     ln -sfn ~/.opencode/bin/opencode ~/.local/bin/opencode
 fi
 
+# codebase-memory-mcp: statically linked, published as a GitHub release rather
+# than an npm package, so bunx cannot fetch it and it is far too big to commit.
+# Checksum-verified because this is a binary the agent then executes.
+if ! have codebase-memory-mcp; then
+    cm_base=https://github.com/DeusData/codebase-memory-mcp/releases/latest/download
+    cm_asset=codebase-memory-mcp-linux-amd64-portable.tar.gz
+    cm_tmp=$(mktemp -d)
+    if curl -fsSL -o "$cm_tmp/$cm_asset" "$cm_base/$cm_asset" \
+       && curl -fsSL -o "$cm_tmp/checksums.txt" "$cm_base/checksums.txt" \
+       && ( cd "$cm_tmp" && grep " $cm_asset\$" checksums.txt | sha256sum -c - >/dev/null 2>&1 ) \
+       && tar xzf "$cm_tmp/$cm_asset" -C "$cm_tmp" codebase-memory-mcp; then
+        install -m 755 "$cm_tmp/codebase-memory-mcp" ~/.local/bin/codebase-memory-mcp
+    else
+        echo "dotfiles: codebase-memory-mcp download or checksum failed" >&2
+    fi
+    rm -rf "$cm_tmp"
+fi
+
 # herdr: agent-aware terminal multiplexer. Its installer drops the binary in
 # ~/.local/bin itself. dev-session builds the opencode + zsh tab layout and is
 # what `devpod up` attaches to.
@@ -94,7 +112,7 @@ git -C "$DOTFILES_DIR" checkout -- .
 # otherwise leave a tool missing without a word. The presence guards mean the
 # next boot retries it; this just makes the gap visible in the meantime.
 absent=""
-for tool in starship zoxide atuin direnv bun opencode herdr tmux zsh; do
+for tool in starship zoxide atuin direnv bun opencode herdr tmux zsh chromium codebase-memory-mcp; do
     command -v "$tool" >/dev/null 2>&1 || absent="$absent $tool"
 done
 [ -z "$absent" ] || echo "dotfiles: NOT installed:$absent (retried next boot)" >&2
