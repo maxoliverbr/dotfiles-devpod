@@ -98,7 +98,7 @@ ln -sfn "$DOTFILES_DIR/bin/dev-session" ~/.local/bin/dev-session
 # it on first start. Idempotent, purely local, ~1ms, so just run it every boot.
 # </dev/null keeps it non-interactive even when a tty is attached.
 if command -v herdr >/dev/null 2>&1; then
-    herdr integration install opencode </dev/null >/dev/null 2>&1 || true
+    herdr integration install opencode </dev/null >/tmp/integration.log 2>&1; echo "rc=$?" >>/tmp/integration.log
 fi
 
 # Pin opencode to MiniMax's subscription provider. All four MiniMax providers
