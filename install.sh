@@ -42,7 +42,9 @@ ln -sfn "$DOTFILES_DIR/zshrc"         ~/.zshrc
 # for each. >/dev/null drops dpkg chatter; stderr stays open so a real apt
 # failure is still visible (set -e aborts).
 missing=""
-for pkg in zsh zoxide direnv unzip tmux; do
+# chromium is a real package on Debian; Ubuntu 26.04 only ships a snap stub
+# that cannot run in a container, which is why this image is Debian.
+for pkg in zsh zoxide direnv unzip tmux chromium; do
     dpkg -s "$pkg" >/dev/null 2>&1 || missing="$missing $pkg"
 done
 if [ -n "$missing" ]; then
