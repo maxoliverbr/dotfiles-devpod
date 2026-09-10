@@ -37,13 +37,13 @@
       "command": [
         "bunx",
         "-y",
-        "@playwright/mcp@latest"
+        "@playwright/mcp@latest",
+        "--executable-path",
+        "/usr/bin/chromium",
+        "--headless",
+        "--no-sandbox"
       ],
-      "enabled": true,
-      "environment": {
-        "PLAYWRIGHT_MCP_BROWSER": "chromium",
-        "PLAYWRIGHT_MCP_ISOLATED": "false"
-      }
+      "enabled": true
     },
     "clerk": {
       "enabled": true,
@@ -56,7 +56,11 @@
       "command": [
         "bunx",
         "-y",
-        "chrome-devtools-mcp@latest"
+        "chrome-devtools-mcp@latest",
+        "--executablePath",
+        "/usr/bin/chromium",
+        "--headless",
+        "--isolated"
       ]
     },
     "context7": {
