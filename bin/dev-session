@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
-# Attach to this container's herdr session, building it on first run with two
-# tabs: opencode, and a plain zsh shell.
-#
-# `devpod up` runs this on every boot, so the layout build is idempotent --
-# otherwise each boot would stack up another workspace.
+# Attach to this container's herdr session with two tabs: opencode, and a plain
+# zsh shell. `devpod up` runs this on every boot, so it must be idempotent --
+# and it must repair a session whose opencode has since exited, not just check
+# that a workspace exists.
 set -euo pipefail
 
 cd "${1:-$PWD}"
@@ -19,17 +18,29 @@ if ! herdr status server 2>/dev/null | grep -q '^status: running'; then
     done
 fi
 
+# Build the layout only when there is no session yet. Creating a workspace also
+# creates its first tab and root pane, so tab 1 becomes opencode and we add zsh.
 if [ "$(herdr workspace list | jq '.result.workspaces | length')" -eq 0 ]; then
     created=$(herdr workspace create --cwd "$PWD" --label "${PWD##*/}" --no-focus)
     ws=$(jq -r '.result.workspace.workspace_id' <<<"$created")
-    tab=$(jq -r '.result.tab.tab_id'            <<<"$created")
-    pane=$(jq -r '.result.root_pane.pane_id'    <<<"$created")
-
-    # Workspace creation already made tab 1 + its root pane; reuse them for
-    # opencode rather than creating a third tab, and leave focus there.
-    herdr tab rename "$tab" opencode  >/dev/null
-    herdr pane run   "$pane" opencode >/dev/null
+    herdr tab rename "$(jq -r '.result.tab.tab_id' <<<"$created")" opencode >/dev/null
     herdr tab create --workspace "$ws" --label zsh --cwd "$PWD" --no-focus >/dev/null
+fi
+
+# opencode exits (crash, ctrl-c, or a killed client) leaving a tab still called
+# "opencode" running a bare shell. Restart it whenever it is not the pane's
+# foreground process, so re-attaching always lands on a live agent.
+tab=$(herdr tab list | jq -r 'first(.result.tabs[] | select(.label == "opencode") | .tab_id) // empty')
+if [ -n "$tab" ]; then
+    pane=$(herdr pane list | jq -r --arg t "$tab" 'first(.result.panes[] | select(.tab_id == $t) | .pane_id) // empty')
+    if [ -n "$pane" ]; then
+        fg=$(herdr pane process-info --pane "$pane" \
+             | jq -r '[.result.process_info.foreground_processes[].name] | join(" ")')
+        case " $fg " in
+            *" opencode "*) ;;
+            *) herdr pane run "$pane" opencode >/dev/null ;;
+        esac
+    fi
 fi
 
 exec herdr
