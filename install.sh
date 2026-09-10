@@ -94,6 +94,13 @@ fi
 have herdr || { curl -fsSL https://herdr.dev/install.sh | sh; } >/dev/null 2>&1 || true
 ln -sfn "$DOTFILES_DIR/bin/dev-session" ~/.local/bin/dev-session
 
+# Install herdr's opencode integration up front, otherwise herdr prompts to do
+# it on first start. Idempotent, purely local, ~1ms, so just run it every boot.
+# </dev/null keeps it non-interactive even when a tty is attached.
+if command -v herdr >/dev/null 2>&1; then
+    herdr integration install opencode </dev/null >/dev/null 2>&1 || true
+fi
+
 # Pin opencode to MiniMax's subscription provider. All four MiniMax providers
 # read the same MINIMAX_API_KEY, and models.dev prices minimax/minimax-cn at
 # $0.30/$1.20 per Mtok while the *-coding-plan pair is 0 -- i.e. covered by the
